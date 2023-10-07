@@ -12,6 +12,7 @@
 человека)
 4. Использование функций. Ваша программа
 не должна быть линейной'''
+
 import csv
 from os.path import exists
 from csv import DictReader, DictWriter
