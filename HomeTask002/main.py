@@ -1,43 +1,28 @@
-'''Создать телефонный справочник с
-возможностью импорта и экспорта данных в
-формате .txt. Фамилия, имя, отчество, номер
-телефона - данные, которые должны находиться
-в файле.
-1. Программа должна выводить данные
-2. Программа должна сохранять данные в
-текстовом файле
-3. Пользователь может ввести одну из
-характеристик для поиска определенной
-записи(Например имя или фамилию
-человека)
-4. Использование функций. Ваша программа
-не должна быть линейной'''
+# Задача 38: Дополнить телефонный справочник возможностью изменения и удаления данных.
+# Пользователь также может ввести имя или фамилию, и Вы должны реализовать функционал для изменения
+# и удаления данных.
+#
+# Формат сдачи: pull-request.
 
-import csv
+from csv import DictWriter, DictReader
 from os.path import exists
-from csv import DictReader, DictWriter
-
-
-
+import csv
 def get_info():
     info = []
-    first_name = input('Введите имя: ',)
-    first_name = first_name.title()
-    print(first_name)
-    last_name = input('Введите фамилия: ',)
-    last_name = last_name.title()
+    first_name = input('Введите фамилию: ')
+    last_name = input('Введите имя: ')
     info.append(first_name)
     info.append(last_name)
     flag = False
     while not flag:
         try:
-            phone_number = int(input('Введите номер: ',))
+            phone_number = int(input('Введите номер телефона: '))
             if len(str(phone_number)) != 11:
                 print('Неверный номер')
             else:
                 flag = True
         except ValueError:
-            print('Неверные символы')
+            print('Номер телефона не из букв)')
     info.append(phone_number)
     return info
 
@@ -58,37 +43,19 @@ def write_file(lst):
         res.append(obj)
         f_n_writer = DictWriter(f_n, fieldnames=['Фамилия', 'Имя', 'Номер'])
         f_n_writer.writeheader()
-        f_n_writer.writerows(res)
-
-
-def delete_file(file_name):
-    with open(file_name, encoding='utf-8') as d:
-        del_1 = list(DictReader(d))
-        index = (search_user('phone.csv'))
-        del del_1[index - 1]
-    with open('phone.csv', 'w', encoding='utf-8', newline='') as f_n:
-        f_n_writer = DictWriter(f_n, fieldnames=['Фамилия', 'Имя', 'Номер'])
-        f_n_writer.writeheader()
-        for el in del_1:
+        for el in res:
             f_n_writer.writerow(el)
 
 
 def read_file(file_name):
-    # with open(file_name, encoding='utf-8') as data:
-    #     phone_book = data.readlines()
     with open(file_name, encoding='utf-8') as f_n:
-        f_n_reader = list(DictReader(f_n))
+        f_n_reader = DictReader(f_n)
         phone_book = list(f_n_reader)
-        return phone_book
+    return phone_book
 
 
 
-def record_info():
-    lst = get_info()
-    write_file(lst)
-
-# Найти index строки где есть нужный нам элемент
-def search_user(file_name):
+def search_user_index(file_name):
     info = input('Введите Фамилию или Имя: ').lower()
     row_num = None
     with open(file_name, 'r', encoding='utf-8') as data:
@@ -98,71 +65,90 @@ def search_user(file_name):
             for el in row:
                 if el.lower() == info:
                     row_num = int(res.index(row))
-                    print(row_num)
-    if row_num != None:
-        return row_num
-    else:
+                    # print('Найден индекс строки: ')
+    return row_num
 
-        print('Неверное значение !')
+def delete_file(file_name):
+    with open(file_name, encoding='utf-8') as d:
+        del_1 = list(DictReader(d))
+        a = search_user_index('phone.csv')
+        print_sep()
+        del del_1[a - 1]
+    with open('phone.csv', 'w', encoding='utf-8', newline='') as f_n:
+        f_n_writer = DictWriter(f_n, fieldnames=['Фамилия', 'Имя', 'Номер'])
+        f_n_writer.writeheader()
+        for el in del_1:
+            f_n_writer.writerow(el)
 
-def edid_user(file_name):
+
+def write_file_сh(lst, a):
+    with open('phone.csv', 'r', encoding='utf-8') as f_n:
+        f_n_reader = DictReader(f_n)
+        res = list(f_n_reader)
+    with open('phone.csv', 'w', encoding='utf-8', newline='') as f_n:
+        obj = {'Фамилия': lst[0], 'Имя': lst[1], 'Номер': lst[2]}
+        res.insert(a - 1, obj)
+        f_n_writer = DictWriter(f_n, fieldnames=['Фамилия', 'Имя', 'Номер'])
+        f_n_writer.writeheader()
+        for el in res:
+            f_n_writer.writerow(el)
+
+
+
+def change_file(file_name):
+    a = search_user_index('phone.csv')
     info = input('Введите Фамилию или Имя: ').lower()
+    print_sep()
     is_row = None
-    with open(file_name, 'r+', encoding='utf-8') as data:
+    with open(file_name, 'r', encoding='utf-8') as data:
         data_reader = csv.reader(data)
         res = list(data_reader)
         for row in res:
             for el in row:
-                if el.lower() == info.lower():
-                    print(row)
-                    row_index = res.index(row)
-        del res[row_index]
-        del res[0]
-        print('Out: ', res)
+                if el.lower() == info:
+                    is_row = row
+
+        if is_row != None:
+            print('Есть совпадение')
+            print_sep()
+            print(is_row)
+            command = input('Изменить (1 - Фамилия | 2 - Имя | 3 - Номер): ')
+
+            if command == '1':
+                is_row[0] = input('Введите новое значение: ')
+                print_sep()
+            if command == '2':
+                is_row[1] = input('Введите новое значение: ')
+                print_sep()
+            if command == '3':
+                is_row[2] = input('Введите новое значение: ')
+                print_sep()
+            print(is_row)
+        else:
+            print('Совпадений не найдено !')
+    print('Удаляем старые данные !')
+    # delete_file('phone.csv')
+    print('Новые данные записаны !')
+    write_file_сh(is_row, a)
+
+def print_sep():
+    print('========================================')
 
 
-
-    # if is_row != None:
-    #     print('Есть совпадение')
-    #     print(is_row)
-    #     command = input('Изменить (1 - Фамилия | 2 - Имя | 3 - Номер): ')
-    #
-    #     if command == '1':
-    #         is_row[1] = input('Введите новое значение: ')
-    #         print('Готово')
-    #
-    #     if command == '2':
-    #         is_row[0] = input('Введите новое значение: ')
-    #         print('Готово')
-    #
-    #     if command == '3':
-    #         is_row[2] = input('Введите новое значение: ')
-    #         print('Готово')
-    #
-    #         print(is_row)
-    #     else:
-    #         print('Совпадений не найдено !')
-
-    # with open('phone.csv', 'w', encoding='utf-8', newline='') as f_n:
-    #     f_n_writer = DictWriter(f_n, fieldnames=['Фамилия', 'Имя', 'Номер'])
-    #     obj = {'Фамилия': is_row[0], 'Имя': is_row[1], 'Номер': is_row[2]}
-    #     res.insert(row_num, obj)
-    #     f_n_writer.writeheader()
-    #     f_n_writer.writerows(res)
+def record_info():
+    lst = get_info()
+    write_file(lst)
 
 
 def main():
     while True:
         command = input('Введите команду: ')
         if command == 'q':
+            break
+        elif command == 'd':
             delete_file('phone.csv')
-            break
-        if command == 'n':
-            search_user('phone.csv')
-            break
-        if command == 'f':
-            edid_user('phone.csv')
-            break
+        elif command == 'n':
+            change_file('phone.csv')
         elif command == 'r':
             if not exists('phone.csv'):
                 print('Файл не создан')
